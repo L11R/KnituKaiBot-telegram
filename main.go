@@ -4,9 +4,9 @@ import (
 	r "gopkg.in/gorethink/gorethink.v3"
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
-	"net/http"
 	"strings"
 	"os"
+	"net/http"
 )
 
 const (
@@ -35,9 +35,7 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
+	// Webhooks example
 	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://krasovsky.me:8443/"+bot.Token, "certs/cert.pem"))
 	if err != nil {
 		log.Fatal(err)
@@ -45,6 +43,14 @@ func main() {
 
 	go http.ListenAndServeTLS(":8443", "certs/cert.pem", "certs/key.pem", nil)
 	updates := bot.ListenForWebhook("/" + bot.Token)
+
+	// Long-polling
+	/*
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates, err := bot.GetUpdatesChan(u)
+	*/
 
 	go InitConnectionPool()
 
