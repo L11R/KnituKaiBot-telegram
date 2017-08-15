@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"os"
 )
 
 const (
@@ -20,7 +21,12 @@ var (
 func main() {
 	var err error
 
-	bot, err = tgbotapi.NewBotAPI("406656319:AAGOLg46Oj0ogKPqNEZaRozj1NI9x_ptB3s")
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		log.Fatal("TOKEN env variable not specified!")
+	}
+
+	bot, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -32,12 +38,12 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://krasovsky.me:8443/"+bot.Token, "cert.pem"))
+	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://krasovsky.me:8443/"+bot.Token, "certs/cert.pem"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	go http.ListenAndServeTLS(":8443", "cert.pem", "key.pem", nil)
+	go http.ListenAndServeTLS(":8443", "certs/cert.pem", "certs/key.pem", nil)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 
 	go InitConnectionPool()
