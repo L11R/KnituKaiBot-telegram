@@ -4,10 +4,16 @@ import (
 	"errors"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"log"
+	"os"
 )
 
 func InitConnectionPool() {
 	var err error
+
+	dbUrl := os.Getenv("DB")
+	if dbUrl == "" {
+		log.Fatal("DB env variable not specified!")
+	}
 
 	session, err = r.Connect(r.ConnectOpts{
 		Address:    dbUrl,

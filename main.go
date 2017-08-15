@@ -9,10 +9,6 @@ import (
 	"net/http"
 )
 
-const (
-	dbUrl = "krasovsky.me"
-)
-
 var (
 	bot     *tgbotapi.BotAPI
 	session *r.Session
