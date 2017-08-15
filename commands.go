@@ -15,7 +15,7 @@ import (
 )
 
 func StartCommand(update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Простой бот, который отображает расписание группы КАИ посредством inline-режима (аналогично боту @gif и другим). Также можно использовать классический режим.\nКраткая справка: /help")
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Чтобы начать использование бота тебе достаточно сохранить свою группу командой такого вида: <code>/save 4108</code>. Разумеется можно указать любую другую группу. После этого все команды станут доступны. Команда для краткая справки по всем доступным командам: /help")
 	bot.Send(msg)
 }
 
@@ -142,7 +142,7 @@ func SaveCommand(update tgbotapi.Update) {
 			if err == nil {
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Cохранено!")
 			} else {
-				msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID, "В процессе сохранения группы что-то пошло не так... Возможно сервер с актуальным расписанием недоступен.")
 			}
 			bot.Send(msg)
 		} else {
@@ -224,7 +224,7 @@ func FullCommand(update tgbotapi.Update) {
 		msg.ParseMode = "HTML"
 		bot.Send(msg)
 	} else {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 		bot.Send(msg)
 	}
 }
@@ -256,7 +256,7 @@ func TodayCommand(update tgbotapi.Update) {
 			msg.ParseMode = "HTML"
 			bot.Send(msg)
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 			bot.Send(msg)
 		}
 	} else {
@@ -292,7 +292,7 @@ func TomorrowCommand(update tgbotapi.Update) {
 			msg.ParseMode = "HTML"
 			bot.Send(msg)
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 			bot.Send(msg)
 		}
 	} else {
@@ -335,7 +335,7 @@ func GetCommand(update tgbotapi.Update) {
 				msg.ParseMode = "HTML"
 				bot.Send(msg)
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 				bot.Send(msg)
 			}
 		} else if day == 6 {
@@ -376,7 +376,7 @@ func StatusCommand(update tgbotapi.Update) {
 		msg.ParseMode = "HTML"
 		bot.Send(msg)
 	} else {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 		bot.Send(msg)
 	}
 }
@@ -398,7 +398,7 @@ func UpdateCommand(update tgbotapi.Update) {
 		msg.ParseMode = "HTML"
 		bot.Send(msg)
 	} else {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "В процессе обновления расписания твоей группы что-то пошло не так... Возможно сервер с актуальным расписанием недоступен.")
 		bot.Send(msg)
 	}
 }
@@ -406,7 +406,7 @@ func UpdateCommand(update tgbotapi.Update) {
 func DeleteCommand(update tgbotapi.Update) {
 	_, err := r.Table("users").Get(update.Message.Chat.ID).Delete().RunWrite(session)
 	if err != nil {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так...")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "В процессе удаления твоего профиля из базы что-то пошло не так... Попробуй позже.")
 		bot.Send(msg)
 	} else {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Удалено!")
