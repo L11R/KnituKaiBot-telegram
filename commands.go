@@ -269,7 +269,7 @@ func TomorrowCommand(update tgbotapi.Update) {
 	// Получаем номер завтрашнего дня
 	day := int(time.Now().Weekday())
 
-	if day != -1 {
+	if day != 0 {
 		// Получаем из базы нужную информацию
 		user, err := GetUser(update.Message.From.ID)
 		if err != nil {
