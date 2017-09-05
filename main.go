@@ -2,7 +2,7 @@ package main
 
 import (
 	r "gopkg.in/gorethink/gorethink.v3"
-	"gopkg.in/telegram-bot-api.v4"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"strings"
 	"os"
@@ -41,12 +41,10 @@ func main() {
 	updates := bot.ListenForWebhook("/" + bot.Token)
 
 	// Long-polling
-	/*
-	u := tgbotapi.NewUpdate(0)
+	/*u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
-	*/
+	updates, err := bot.GetUpdatesChan(u)*/
 
 	go InitConnectionPool()
 
@@ -61,6 +59,10 @@ func main() {
 
 		if strings.HasPrefix(update.Message.Text, "/help") {
 			go HelpCommand(update)
+		}
+
+		if strings.HasPrefix(update.Message.Text, "/week") {
+			go WeekCommand(update)
 		}
 
 		if strings.HasPrefix(update.Message.Text, "/save") {
@@ -93,6 +95,10 @@ func main() {
 
 		if strings.HasPrefix(update.Message.Text, "/delete") {
 			go DeleteCommand(update)
+		}
+
+		if strings.Contains(update.Message.Text, "e-library.kai.ru") {
+			go Link(update)
 		}
 	}
 }

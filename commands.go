@@ -6,7 +6,7 @@ import (
 	"github.com/tidwall/gjson"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"gopkg.in/resty.v0"
-	"gopkg.in/telegram-bot-api.v4"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"regexp"
 	"strconv"
@@ -16,11 +16,30 @@ import (
 
 func StartCommand(update tgbotapi.Update) {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Чтобы начать использование бота тебе достаточно сохранить свою группу командой такого вида: <code>/save 4108</code>. Разумеется можно указать любую другую группу. После этого все команды станут доступны. Команда для краткой справки по всем доступным командам: /help")
+	msg.ParseMode = "HTML"
 	bot.Send(msg)
 }
 
 func HelpCommand(update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "/today - расписание на сегодня.\n/tomorrow - расписание на завтра.\n<code>/get 0-6</code> - расписание на нужный день.\nНапример <code>/get 3</code> - на среду.\n\nВсе эти данные можно также получить посредством inline-режима!\n\n/save - сохраняет вашу группу и её расписание.\n/update - обновляет расписание вашей группы.\n/delete - полностью удаляет ваш профиль из бота.\n/status - отображает текущий статус.")
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "/today - расписание на сегодня.\n/tomorrow - расписание на завтра.\n<code>/get 1-6</code> - расписание на нужный день.\nНапример <code>/get 3</code> - на среду.\n\nВсе эти данные можно также получить посредством inline-режима!\n\n/save - сохраняет вашу группу и её расписание.\n/update - обновляет расписание вашей группы.\n/delete - полностью удаляет ваш профиль из бота.\n/status - отображает текущий статус.")
+	msg.ParseMode = "HTML"
+	bot.Send(msg)
+}
+
+func WeekCommand(update tgbotapi.Update) {
+	_, week := time.Now().ISOWeek()
+
+	text := ""
+
+	if week % 2 != 0 {
+		text += "<b>Нечётная неделя</b>"
+	} else {
+		text += "<b>Чётная неделя</b>"
+	}
+
+	text += fmt.Sprintf(" (%d)", week)
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 	msg.ParseMode = "HTML"
 	bot.Send(msg)
 }
@@ -178,20 +197,57 @@ func GetDayName(day int) string {
 }
 
 func GetDayText(subjects []map[string]string) string {
+	_, week := time.Now().ISOWeek()
 	text := ""
 
 	// Цикл по занятиям
 	for _, elem := range subjects {
+		// Пропускаем четные пары в нечетные недели
+		if week % 2 != 0 && elem["subjectWeek"] == "чет" {
+			continue
+		}
+
+		// Пропускаем нечетные пары в четные недели
+		if week % 2 == 0 && elem["subjectWeek"] == "неч" {
+			continue
+		}
+
 		// Добавляем к существующему сообщению новое занятие
-		text += fmt.Sprintf("<i>%s %s</i>\n%s\n%s, %s, %s, %s\n\n",
-			elem["subjectTime"],
-			elem["subjectWeek"],
-			elem["subjectName"],
-			elem["subjectType"],
-			elem["buildNum"],
-			elem["cabinetNum"],
-			elem["teacherName"],
-		)
+		if elem["subjectTime"] != "" {
+			text += fmt.Sprintf("<i>%s", elem["subjectTime"])
+		} else {
+			text += "<i>TIME UNDEFINED"
+		}
+
+		if elem["subjectWeek"] != "" {
+			text += fmt.Sprintf(" %s</i>\n", elem["subjectWeek"])
+		} else {
+			text += "</i>\n"
+		}
+
+		if elem["subjectName"] != "" {
+			text += fmt.Sprintf("%s\n", elem["subjectName"])
+		} else {
+			text += "SUBJECT NAME UNDEFINED\n"
+		}
+
+		if elem["subjectType"] != "" {
+			text += fmt.Sprintf("%s", elem["subjectType"])
+		}
+
+		if elem["buildNum"] != "" {
+			text += fmt.Sprintf(", %s", elem["buildNum"])
+		}
+
+		if elem["cabinetNum"] != "" {
+			text += fmt.Sprintf(", %s", elem["cabinetNum"])
+		}
+
+		if elem["teacherName"] != "" {
+			text += fmt.Sprintf(", %s", elem["teacherName"])
+		}
+
+		text += "\n\n"
 	}
 
 	return text
