@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/tidwall/gjson"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"gopkg.in/resty.v0"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"regexp"
 	"strconv"
@@ -31,7 +31,7 @@ func WeekCommand(update tgbotapi.Update) {
 
 	text := ""
 
-	if week % 2 != 0 {
+	if week%2 != 0 {
 		text += "<b>Нечётная неделя</b>"
 	} else {
 		text += "<b>Чётная неделя</b>"
@@ -203,12 +203,12 @@ func GetDayText(subjects []map[string]string) string {
 	// Цикл по занятиям
 	for _, elem := range subjects {
 		// Пропускаем четные пары в нечетные недели
-		if week % 2 != 0 && elem["subjectWeek"] == "чет" {
+		if week%2 != 0 && elem["subjectWeek"] == "чет" {
 			continue
 		}
 
 		// Пропускаем нечетные пары в четные недели
-		if week % 2 == 0 && elem["subjectWeek"] == "неч" {
+		if week%2 == 0 && elem["subjectWeek"] == "неч" {
 			continue
 		}
 

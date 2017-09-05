@@ -1,20 +1,26 @@
 package main
 
 import (
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"gopkg.in/resty.v0"
+	"bytes"
+	"fmt"
 	"github.com/beevik/etree"
-	"github.com/unidoc/unidoc/pdf/creator"
-	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/nfnt/resize"
 	"github.com/orcaman/writerseeker"
-	"fmt"
-	"bytes"
+	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/unidoc/unidoc/pdf/creator"
+	"gopkg.in/resty.v0"
 	"image"
+	"strings"
 )
 
 func Link(update tgbotapi.Update) {
-	resp, err := resty.R().Get(update.Message.Text + "/pages.xml")
+	url := update.Message.Text
+	if strings.HasSuffix(url, "/index.html") {
+		url = strings.Replace(url, "/index.html", "", 1)
+	}
+
+	resp, err := resty.R().Get(url + "/pages.xml")
 	code := resp.StatusCode()
 
 	if err != nil || code != 200 {
@@ -32,7 +38,7 @@ func Link(update tgbotapi.Update) {
 		c := creator.New()
 		for i, page := range root.SelectElements("PageData") {
 			attr := page.SelectAttr("LargeFile")
-			resp, err = resty.R().Get(update.Message.Text + "/" + attr.Value)
+			resp, err = resty.R().Get(url + "/" + attr.Value)
 
 			imgOrig, _, err := image.Decode(bytes.NewReader(resp.Body()))
 			if err != nil {
@@ -63,12 +69,12 @@ func Link(update tgbotapi.Update) {
 			img.SetPos(0, 0)
 			_ = c.Draw(img)
 
-			fmt.Printf("Downloaded and added to document: %d\n", i + 1)
+			fmt.Printf("Downloaded and added to document: %d\n", i+1)
 
 			msgEdited := tgbotapi.NewEditMessageText(
 				sent.Chat.ID,
 				sent.MessageID,
-				fmt.Sprintf("Страница №%d загружена и добавлена в PDF.", i + 1),
+				fmt.Sprintf("Страница №%d загружена и добавлена в PDF.", i+1),
 			)
 			bot.Send(msgEdited)
 		}
@@ -90,7 +96,7 @@ func Link(update tgbotapi.Update) {
 		buf.ReadFrom(ws.BytesReader())
 
 		file := tgbotapi.FileBytes{
-			Name: "book.pdf",
+			Name:  "book.pdf",
 			Bytes: buf.Bytes(),
 		}
 

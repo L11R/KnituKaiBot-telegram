@@ -1,12 +1,12 @@
 package main
 
 import (
-	r "gopkg.in/gorethink/gorethink.v3"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	r "gopkg.in/gorethink/gorethink.v3"
 	"log"
-	"strings"
-	"os"
 	"net/http"
+	"os"
+	"strings"
 )
 
 var (
