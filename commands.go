@@ -270,7 +270,7 @@ func FullCommand(update tgbotapi.Update) {
 		text := ""
 
 		// Цикл по дням недели
-		for i, _ := range group.Schedule {
+		for i := range group.Schedule {
 			// Добавляем к существующему сообщению день недели
 			text += "<b>" + GetDayName(i) + "</b>\n"
 			text += GetDayText(group.Schedule[i])
