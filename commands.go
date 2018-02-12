@@ -31,7 +31,7 @@ func WeekCommand(update tgbotapi.Update) {
 
 	text := ""
 
-	if week%2 != 0 {
+	if week%2 == 0 {
 		text += "<b>Нечётная неделя</b>"
 	} else {
 		text += "<b>Чётная неделя</b>"
@@ -203,12 +203,12 @@ func GetDayText(subjects []map[string]string) string {
 	// Цикл по занятиям
 	for _, elem := range subjects {
 		// Пропускаем четные пары в нечетные недели
-		if week%2 != 0 && elem["subjectWeek"] == "чет" {
+		if week%2 == 0 && elem["subjectWeek"] == "чет" {
 			continue
 		}
 
 		// Пропускаем нечетные пары в четные недели
-		if week%2 == 0 && elem["subjectWeek"] == "неч" {
+		if week%2 != 0 && elem["subjectWeek"] == "неч" {
 			continue
 		}
 
@@ -426,7 +426,7 @@ func StatusCommand(update tgbotapi.Update) {
 
 		text += "<b>ID:</b> " + fmt.Sprint(user.Id) + "\n"
 		text += "<b>Группа:</b> " + user.GroupNum + "\n"
-		text += "<b>Последнее обновление:</b> " + fmt.Sprint(group.Time)
+		text += "<b>Последнее обновление:</b> " + fmt.Sprint(group.Time) + "\n"
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 		msg.ParseMode = "HTML"

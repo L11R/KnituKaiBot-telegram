@@ -4,9 +4,9 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"log"
+	"net/http"
 	"os"
 	"strings"
-	"net/http"
 )
 
 var (
