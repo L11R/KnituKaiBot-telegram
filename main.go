@@ -27,8 +27,6 @@ func main() {
 		log.Panic(err)
 	}
 
-	//bot.Debug = true
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	// Webhooks example (don't forget to change URL!)
@@ -62,6 +60,14 @@ func main() {
 			go HelpCommand(update)
 		}
 
+		if strings.HasPrefix(update.Message.Text, "/keyboard") {
+			go KeyboardCommand(update)
+		}
+
+		if strings.HasPrefix(update.Message.Text, "/remove") {
+			go RemoveCommand(update)
+		}
+
 		if strings.HasPrefix(update.Message.Text, "/week") {
 			go WeekCommand(update)
 		}
@@ -82,7 +88,13 @@ func main() {
 			go TomorrowCommand(update)
 		}
 
-		if strings.HasPrefix(update.Message.Text, "/get") {
+		if strings.HasPrefix(update.Message.Text, "Понедельник") ||
+			strings.HasPrefix(update.Message.Text, "Вторник") ||
+			strings.HasPrefix(update.Message.Text, "Среда") ||
+			strings.HasPrefix(update.Message.Text, "Четверг") ||
+			strings.HasPrefix(update.Message.Text, "Пятница") ||
+			strings.HasPrefix(update.Message.Text, "Суббота") ||
+			strings.HasPrefix(update.Message.Text, "Воскресенье") {
 			go GetCommand(update)
 		}
 

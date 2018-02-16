@@ -9,7 +9,6 @@ import (
 	"gopkg.in/resty.v0"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -21,8 +20,31 @@ func StartCommand(update tgbotapi.Update) {
 }
 
 func HelpCommand(update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "/today - расписание на сегодня.\n/tomorrow - расписание на завтра.\n<code>/get 1-6</code> - расписание на нужный день.\nНапример <code>/get 3</code> - на среду.\n\nВсе эти данные можно также получить посредством inline-режима!\n\n/save - сохраняет вашу группу и её расписание.\n/update - обновляет расписание вашей группы.\n/delete - полностью удаляет ваш профиль из бота.\n/status - отображает текущий статус.")
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "/today - расписание на сегодня.\n/tomorrow - на завтра.\n/full - на всю неделю.\n/keyboard - удобная клавиатура с днями недели.\n/remove - если вы вдруг догадались кинуть бота в чат и страдаете от того, что клавитуара появилась у всех.\n/week - показывает какая сейчас неделя (чётная или нет).\n\n/save - сохраняет вашу группу и её расписание.\n/update - обновляет расписание вашей группы.\n/delete - полностью удаляет ваш профиль из бота.\n/status - отображает текущий статус.")
 	msg.ParseMode = "HTML"
+	bot.Send(msg)
+}
+
+func KeyboardCommand(update tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Клавиатура активирована!")
+	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Понедельник"),
+			tgbotapi.NewKeyboardButton("Вторник"),
+			tgbotapi.NewKeyboardButton("Среда"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Четверг"),
+			tgbotapi.NewKeyboardButton("Пятница"),
+			tgbotapi.NewKeyboardButton("Суббота"),
+		),
+	)
+	bot.Send(msg)
+}
+
+func RemoveCommand(update tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Клавиатура удалена!")
+	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
 	bot.Send(msg)
 }
 
@@ -175,8 +197,8 @@ func SaveCommand(update tgbotapi.Update) {
 	}
 }
 
-func GetDayName(day int) string {
-	switch day {
+func GetDayName(num int) string {
+	switch num {
 	case 0:
 		return "Понедельник"
 	case 1:
@@ -192,7 +214,28 @@ func GetDayName(day int) string {
 	case 6:
 		return "Воскресенье"
 	default:
-		return "ОШИБКА!"
+		return ""
+	}
+}
+
+func GetDayNum(name string) int {
+	switch name {
+	case "Понедельник":
+		return 0
+	case "Вторник":
+		return 1
+	case "Среда":
+		return 2
+	case "Четверг":
+		return 3
+	case "Пятница":
+		return 4
+	case "Суббота":
+		return 5
+	case "Воскресенье":
+		return 6
+	default:
+		return -1
 	}
 }
 
@@ -358,52 +401,36 @@ func TomorrowCommand(update tgbotapi.Update) {
 }
 
 func GetCommand(update tgbotapi.Update) {
-	re := regexp.MustCompile(`\s(.+)`)
-	dayStr := re.FindStringSubmatch(update.Message.Text)
-	if len(dayStr) > 0 {
-		day, err := strconv.ParseInt(dayStr[1], 10, 32)
+	day := GetDayNum(update.Message.Text)
+
+	if day < 6 {
+		// Получаем из базы нужную информацию
+		user, err := GetUser(update.Message.From.ID)
 		if err != nil {
 			log.Println(err)
 		}
 
-		day--
+		group, err := GetGroup(user.GroupID)
+		if err != nil {
+			log.Println(err)
+		}
 
-		if err == nil && day > -1 && day < 6 {
-			// Получаем из базы нужную информацию
-			user, err := GetUser(update.Message.From.ID)
-			if err != nil {
-				log.Println(err)
-			}
+		if err == nil {
+			// Инициализируем пустое сообщение
+			text := ""
 
-			group, err := GetGroup(user.GroupID)
-			if err != nil {
-				log.Println(err)
-			}
+			text += "<b>" + GetDayName(int(day)) + "</b>\n"
+			text += GetDayText(group.Schedule[day])
 
-			if err == nil {
-				// Инициализируем пустое сообщение
-				text := ""
-
-				text += "<b>" + GetDayName(int(day)) + "</b>\n"
-				text += GetDayText(group.Schedule[day])
-
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-				msg.ParseMode = "HTML"
-				bot.Send(msg)
-			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
-				bot.Send(msg)
-			}
-		} else if day == 6 {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Похоже это воскресенье.")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+			msg.ParseMode = "HTML"
 			bot.Send(msg)
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Укажите правильный порядковый номер дня недели!")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Что-то пошло не так... Похоже ты ещё не сохранил свою группу.")
 			bot.Send(msg)
 		}
 	} else {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Пример: <code>/get 3</code>, чтобы получить расписание на среду.")
-		msg.ParseMode = "HTML"
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Любопытный? Да, мне было не лень обработать и этот кейс.")
 		bot.Send(msg)
 	}
 }
